@@ -17,11 +17,22 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
+class Comment(BaseModel):
+    post_id: int
+    comment: str
+
+class CommentOut(BaseModel):
+    comment: str
+
+    class Config:
+        orm_mode = True
+
 class Post(PostBase):
     id: int
     created_at: datetime
     owner_id: int
     owner: UserOut
+    
     
     class Config:
         orm_mode = True

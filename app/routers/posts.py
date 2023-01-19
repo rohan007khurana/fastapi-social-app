@@ -26,8 +26,6 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), curren
     # new_post = cursor.fetchone()
     # conn.commit()
 
-    print(current_user.email)
-
     new_post = models.Post(owner_id = current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
@@ -79,7 +77,6 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
 
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
-    print(post.owner_id)
 
     if post == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} does not exist")
@@ -91,3 +88,17 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
     db.commit()
 
     return post_query.first()
+
+@router.post("/comment/{id}", response_model=schemas.CommentOut)
+def post_comment(id: int, comment: schemas.Comment, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    post = post_query.first()
+
+    if post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with {id} does not exists")
+    
+    new_comment = models.Comment(post_id=id, user_id=current_user.id, comment = comment.comment)
+    db.add(new_comment)
+    db.commit()
+    return new_comment
+    
